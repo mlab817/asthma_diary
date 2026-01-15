@@ -15,8 +15,21 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final PageController _pageController = PageController();
+  late final PageController _pageController;
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _pageController = PageController();
+
+    _pageController.addListener(() {
+      setState(() {
+        _currentIndex = _pageController.page?.toInt() ?? 0;
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -159,21 +172,57 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ),
           Card(
-            child: TableCalendar(
-              focusedDay: _focusedDay,
-              firstDay: firstDay,
-              lastDay: lastDay,
-              sixWeekMonthsEnforced: true,
-              availableCalendarFormats: {CalendarFormat.month: 'Month'},
-              onDaySelected: (DateTime day, DateTime focusedDay) {
-                setState(() {
-                  _selectedDay = day;
-                  _focusedDay = day;
-                });
-              },
-              selectedDayPredicate: (day) {
-                return isSameDay(_selectedDay, day);
-              },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: TableCalendar(
+                focusedDay: _focusedDay,
+                firstDay: firstDay,
+                lastDay: lastDay,
+                sixWeekMonthsEnforced: true,
+                availableCalendarFormats: {CalendarFormat.month: 'Month'},
+                headerStyle: HeaderStyle(
+                  titleCentered: true,
+                  leftChevronIcon: Icon(
+                    LucideIcons.chevronLeft,
+                    color: AppColors.primary,
+                  ),
+                  rightChevronIcon: Icon(
+                    LucideIcons.chevronRight,
+                    color: AppColors.primary,
+                  ),
+                ),
+                onDaySelected: (DateTime day, DateTime focusedDay) {
+                  setState(() {
+                    _selectedDay = day;
+                    _focusedDay = day;
+                  });
+                },
+                selectedDayPredicate: (day) {
+                  return isSameDay(_selectedDay, day);
+                },
+                calendarStyle: CalendarStyle(
+                  selectedDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.primary,
+                  ),
+                  todayDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.primary.withOpacity(0.5),
+                  ),
+                  defaultDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.surface,
+                  ),
+                  weekendDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.surface,
+                  ),
+                  outsideDecoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.surface,
+                  ),
+                ),
+              ),
             ),
           ),
           SizedBox(
