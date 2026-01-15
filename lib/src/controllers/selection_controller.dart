@@ -1,34 +1,29 @@
 import 'package:flutter/material.dart';
 
 class SelectionController<T> {
-  final ValueNotifier<Set<T>> _selectedItems = ValueNotifier<Set<T>>(<T>{});
-
-  ValueNotifier<Set<T>> get selectedItems => _selectedItems;
-
-  bool get isEmpty => _selectedItems.value.isEmpty;
+  final ValueNotifier<Set<T>> selectedItems = ValueNotifier({});
+  final ValueNotifier<Map<T, int>> severityMap = ValueNotifier({}); // severity 1-5
 
   void toggle(T item) {
-    final current = _selectedItems.value;
-    final next = Set<T>.from(current);
-
-    if (next.contains(item)) {
-      next.remove(item);
+    final current = Set<T>.from(selectedItems.value);
+    if (current.contains(item)) {
+      current.remove(item);
+      severityMap.value = Map<T, int>.from(severityMap.value)..remove(item);
     } else {
-      next.add(item);
+      current.add(item);
+      severityMap.value = Map<T, int>.from(severityMap.value)..[item] = 3; // default severity
     }
-
-    _selectedItems.value = next;
+    selectedItems.value = current;
   }
 
-  void clear() {
-    _selectedItems.value = <T>{};
-  }
-
-  bool isSelected(T item) {
-    return _selectedItems.value.contains(item);
+  void setSeverity(T item, int severity) {
+    if (selectedItems.value.contains(item)) {
+      severityMap.value = Map<T, int>.from(severityMap.value)..[item] = severity;
+    }
   }
 
   void dispose() {
-    _selectedItems.dispose();
+    selectedItems.dispose();
+    severityMap.dispose();
   }
 }

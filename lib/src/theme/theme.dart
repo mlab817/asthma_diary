@@ -1,11 +1,10 @@
 import 'package:asthma_diary/src/theme/colors.dart';
-import 'package:asthma_diary/src/theme/radius_elevation.dart';
 import 'package:asthma_diary/src/theme/spacing.dart';
 import 'package:flutter/material.dart';
 
 ThemeData appTheme() {
   return ThemeData(
-    scaffoldBackgroundColor: AppColors.white,
+    scaffoldBackgroundColor: AppColors.surface,
     fontFamily: 'Poppins',
     primaryColor: AppColors.primary,
 
@@ -16,9 +15,17 @@ ThemeData appTheme() {
     ),
 
     cardTheme: CardThemeData(
-      color: AppColors.white,
-      elevation: AppElevation.card,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      color: Colors.white,
+      elevation: 1, // shadow-sm
+      shadowColor: Colors.black.withOpacity(0.05),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16), // rounded-2xl
+        side: const BorderSide(
+          color: Color(0xFFF3F4F6), // gray-100
+          width: 1,
+        ),
+      ),
+      margin: EdgeInsets.zero, // let layout decide
     ),
 
     elevatedButtonTheme: ElevatedButtonThemeData(

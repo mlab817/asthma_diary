@@ -1,7 +1,8 @@
+import 'package:asthma_diary/src/components/buttons.dart';
 import 'package:asthma_diary/src/controllers/selection_controller.dart';
 import 'package:asthma_diary/src/db/symptoms_db.dart';
-import 'package:asthma_diary/src/extensions/extensions.dart';
-import 'package:asthma_diary/src/widgets/selectable_chip.dart';
+import 'package:asthma_diary/src/theme/colors.dart';
+import 'package:asthma_diary/src/theme/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -62,54 +63,172 @@ class _AddSymptomPageState extends State<AddSymptomPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Log Symptom'), centerTitle: true),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Wrap(
-          spacing: 8.0,
-          runSpacing: 8.0,
-          children: symptoms
-              .map(
-                (symptom) => SelectableChip<Symptom>(
-                  item: symptom,
-                  label: symptom.symptom,
-                  controller: _controller,
-                ),
-              )
-              .toList(),
+        child: ListView.separated(
+          padding: EdgeInsets.zero,
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
+          itemCount: symptoms.length,
+          itemBuilder: (context, index) => SelectableButtonTile<Symptom>(
+            item: symptoms[index],
+            label: symptoms[index].symptom,
+            controller: _controller,
+          ),
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsetsGeometry.all(32),
+        padding: EdgeInsetsGeometry.all(16),
         child: Row(
-          spacing: 32,
+          spacing: 16,
           children: [
             Expanded(
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ButtonStyle(
-                  backgroundColor: WidgetStateProperty.all(
-                    context.theme.colorScheme.primary,
-                  ),
-                  foregroundColor: WidgetStateProperty.all(
-                    context.theme.colorScheme.onPrimary,
-                  ),
-                  shape: WidgetStateProperty.all(
-                    RoundedRectangleBorder(
-                      borderRadius: BorderRadiusGeometry.circular(8),
-                    ),
-                  ),
-                  padding: WidgetStateProperty.all(EdgeInsetsGeometry.all(16)),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 48),
+                child: PrimaryButton3D(
+                  label: 'Save',
+                  onPressed: () {},
+                  color: Colors.redAccent,
                 ),
-                child: Text('Save'),
               ),
             ),
             Expanded(
-              child: ElevatedButton(onPressed: () {}, child: Text('Cancel')),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: 48),
+                child: PrimaryButton3D(
+                  label: 'Cancel',
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: Colors.orange,
+                ),
+              ),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class SelectableButtonTile<T> extends StatelessWidget {
+  final T item;
+  final String label;
+  final SelectionController<T> controller;
+
+  const SelectableButtonTile({
+    super.key,
+    required this.item,
+    required this.label,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<Set<T>>(
+      valueListenable: controller.selectedItems,
+      builder: (context, selectedItems, child) {
+        final isSelected = selectedItems.contains(item);
+
+        return GestureDetector(
+          onTap: () => controller.toggle(item),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 120),
+            curve: Curves.easeOut,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary.withOpacity(0.18) // slightly stronger
+                  : AppColors.surface, // off-white instead of pure white
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isSelected ? AppColors.primary : AppColors.border,
+                width: 1.5, // slightly thicker for clarity
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isSelected
+                      ? AppColors.primary.withOpacity(0.20)
+                      : Colors.black.withOpacity(0.08),
+                  offset: const Offset(0, 4),
+                  blurRadius: 12,
+                  spreadRadius: 0,
+                ),
+              ],
+            ),
+
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        label,
+                        style: AppTextStyles.body.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      transitionBuilder: (child, animation) =>
+                          ScaleTransition(scale: animation, child: child),
+                      child: isSelected
+                          ? Icon(
+                              Icons.check_circle,
+                              key: const ValueKey('checked'),
+                              color: AppColors.primary,
+                            )
+                          : Icon(
+                              Icons.check_circle_outline,
+                              key: const ValueKey('unchecked'),
+                              color: AppColors.mutedText,
+                            ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+
+                // Severity slider
+                if (isSelected)
+                  ValueListenableBuilder<Map<T, int>>(
+                    valueListenable: controller.severityMap,
+                    builder: (context, severityMap, child) {
+                      final severity = severityMap[item] ?? 3;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SliderTheme(
+                            data: SliderTheme.of(context).copyWith(
+                              activeTrackColor: AppColors.primary,
+                              inactiveTrackColor: AppColors.border,
+                              thumbColor: AppColors.white, // dark thumb
+                              overlayColor: AppColors.primary.withOpacity(0.2),
+                              trackHeight: 4,
+                            ),
+                            child: Slider(
+                              min: 1,
+                              max: 5,
+                              divisions: 4,
+                              value: severity.toDouble(),
+                              onChanged: (value) =>
+                                  controller.setSeverity(item, value.toInt()),
+                            ),
+                          ),
+                          Text(
+                            'Severity: $severity',
+                            style: AppTextStyles.caption.copyWith(
+                              color: AppColors.mutedText,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

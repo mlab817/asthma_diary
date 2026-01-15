@@ -28,4 +28,9 @@ class AppTextStyles {
     fontWeight: FontWeight.w600,
     color: AppColors.onPrimary,
   );
+
+  static TextStyle textSm = TextStyle(
+    fontSize: 12,
+    color: AppColors.textSecondary,
+  );
 }
